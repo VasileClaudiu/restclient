@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Rest Client Online</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://unpkg.com/vue-select@latest/dist/vue-select.css">
+<style>
+div.post{
+    display:block;
+    text-align:left;
+    float: left;
+}
+li{
+    list-style: none;
+}
+.v-select .dropdown-menu {
+  display:block;
+}
+</style>
+</head>
+<body>
+    <div class="wrapper" style="margin-top:75px;">
+    <div class="container">
+            <div id="app">
+                    <div class="col-12 text-center"><strong>{{ message }}</strong></div><br/>
+                    <div class="btn-danger text-center">
+                    <p v-if="errors.length">
+                            <b>Please correct the following error(s):</b>
+                            <ul>
+                              <li v-for="error in errors">{{ error }}</li>
+                            </ul>
+                          </p>
+                        </div>
+                          <br/>
+    <div class="row form-inline">
+        <div class="col-3">
+                <label class="col-4 col-form-label">Method</label> 
+        </div>
+        <div class="col-9 form-inline">
+      <select id="select" name="select" class="custom-select col-2" v-model="selmethod">
+        <option value="get">Get</option>
+        <option value="post">Post</option>
+        <option value="delete">Delete</option>
+      </select>
+      <input id="text" name="text" type="text" class="form-control col-10" v-model="url">
+</div>
+</div>
+<br/>
+<div class="row form-inline">
+        <div class="col-3">
+            <label class="col-4 col-form-label">Headers</label> 
+        </div>
+        <div class="col-9">
+  <div class="form-group form-inline">
+        <v-select v-model="selectedone" :options="headerone" label="header" class="col-6" :value="headerone.header" @input="headeroneChange"></v-select>
+        <v-select v-model="selectedtwo" :options="headertwo" label="header" class="col-6" :value="headertwo.header" @input="headertwoChange" v-if="(selectedone !=='' && selectedone !== null)"></v-select>
+  </div>
+  </div>
+  </div>
+  <br/>
+  <div class="row form-inline" v-if="ifpost">
+        <div class="col-3 post">
+                <span class="col-6 col-form-label post">Post body data</span> 
+            </div>
+      <textarea id="textarea" name="textarea" cols="40" rows="5" class="form-control col-9" v-model="posttextarea"></textarea>
+  </div>
+  <br/>
+  <div class="form-group row">
+    <div class="offset-4 col-8">
+      <button name="submit" type="submit" class="btn btn-primary" v-on:click="click">Test Api</button>
+    </div>
+  </div>
+
+  <div class="result" v-if="ifresultdata">{{ resultdata }}</div>
+  <div class="result" v-if="ifresult">{{ result }}</div>
+  <div class="error btn-danger" v-if="iferror">{{ error }}</div>
+
+</div>
+    </div>
+</div>
+</body>
+<footer>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>   
+    <script src="js/vue.js"></script>
+    <script src="js/moment.min.js"></script>
+    <script src="js/axios.min.js"></script>
+    <script src="https://unpkg.com/vue-select@latest"></script>
+    <script>
+        Vue.component('v-select', VueSelect.VueSelect);
+        var app = new Vue({
+        el: '#app',
+        data: {
+            errors: [],
+            message: 'Hello Vue Rest Client Online!',
+            seen: true,
+            selmethod: 'get',
+            url: null,
+            headerone: [
+                {id: 1,header: 'Content-Type:application/json'},
+                {id: 2,header: 'Content-Type:application/x-www-form-urlencoded'},
+            ],
+            selectedone:'',
+            headertwo: [
+                {id: 1,header: "'Content-Type':'application/json'"},
+                {id: 2,header: "'Content-Type':'application/x-www-form-urlencoded'"},
+            ],
+            selectedtwo:'',
+            posttextarea: null,
+            ifresult: false,
+            ifresultdata: false,
+            iferror: false,
+            result:'',
+            resultdata:'',
+            error:'',
+            ifpost: false,
+            todos: [
+                    { text: 'Learn JavaScript' },
+                    { text: 'Learn Vue' },
+                    { text: 'Build something awesome' }
+                ]
+        },
+        watch: {
+                'selmethod':function(val){
+                    //alert(this.selmethod);
+                    if(this.selmethod === 'post'){
+                        this.errors = [];
+                        this.error = '';
+                        this.ifpost = true;
+                        this.ifresult = false;
+                        this.ifresultdata = false;
+                        //this.checkvalidate();
+                    }
+                    if(this.selmethod === 'get' || this.selmethod === 'delete'){
+                        this.errors = [];
+                        this.error = '';
+                        this.ifpost = false;
+                        this.ifresult = false;
+                        this.ifresultdata = false;
+                        this.checkvalidate();
+                    }
+                }
+        },
+        methods: {
+            reverseMessage: function () {
+                this.message = this.message.split('').reverse().join('');
+            },
+            headeroneChange(value) {
+                //if(e.target.options.selectedIndex > -1) {
+                //    alert("Select Changed");
+                //    alert(JSON.stringify(e.target.options[e.target.options.selectedIndex]));
+                //    alert(e.target.options[e.target.options.selectedIndex].dataset.header);
+                //}
+                this.selectedone = value;
+                //alert(JSON.stringify(this.selectedone));
+                //alert("Select Changed");
+            },
+            headertwoChange(value) {
+                //if(e.target.options.selectedIndex > -1) {
+                //    alert("Select Changed");
+                //    alert(JSON.stringify(e.target.options[e.target.options.selectedIndex]));
+                //    alert(e.target.options[e.target.options.selectedIndex].dataset.header);
+                //}
+                this.selectedtwo = value;
+                //alert(JSON.stringify(this.selectedtwo));
+                //alert("Select Changed");
+            },
+            click: function(){
+                this.checkvalidate(); //http://localhost/slimv3/public/students
+                //alert('Click!!-- '+moment(Date.now()).format('MM/DD/YYYY hh:mm'));
+                //alert(this.selmethod+'-'+this.url+'-'+this.headerone+'-'+this.headertwo+'-'+this.posttextarea);
+                if(this.selmethod === 'get'){
+                    var headers = this.selectedone+","+this.selectedtwo;
+                    var config = {
+                        headers: { headers }
+                        };
+                axios
+                    .get(this.url,config)
+                    .then((response) => {
+                        this.result = response;
+                        this.resultdata = response.data;
+                        this.ifresult = true;
+                        this.ifresultdata = true;
+                        //alert('success');
+                    }, (error)  =>  {
+                        //alert(JSON.stringify(error));
+                        if(error.response.status === 404){
+                            error.message = error.message + "- bad url or not exist";
+                            //alert('Status-404');
+                        }
+                        if(error.response.status === 405){
+                            error.message = error.message + "- method not allowed";
+                        }
+                        this.error = error;
+                        this.iferror = true;
+                        //alert(error.response.status);
+                        //alert('error');
+                    });
+                }else if(this.selmethod === 'post'){
+                    var headers = this.selectedone+","+this.selectedtwo;
+                    var config = {
+                        headers: { headers }
+                        };
+                    axios
+                    .post(this.url,this.posttextarea,config)
+                    .then((response) => {
+                        this.result = response;
+                        this.resultdata = response.data;
+                        this.ifresult = true;
+                        this.ifresultdata = true;
+                        //alert('success');
+                    }, (error)  =>  {
+                        //alert(JSON.stringify(error));
+                        if(error.response.status === 404){
+                            error.message = error.message + "- bad url or not exist";
+                            //alert('Status-404');
+                        }
+                        if(error.response.status === 405){
+                            error.message = error.message + "- method not allowed";
+                        }
+                        this.error = error;
+                        this.iferror = true;
+                        //alert('error');
+                    });
+                }
+            },
+            checkvalidate: function (e) {
+                this.iferror = false;
+                this.ifresult = false;
+                this.ifresultdata = false;
+                if (this.url && this.posttextarea) {
+                    return true;
+                }
+
+                if (!this.url) {
+                    this.errors.push('Url required.');
+                }
+                if(this.selmethod === 'post'){
+                    if (!this.posttextarea) {
+                        this.errors.push('Post body data required.');
+                    }
+                }
+                if(this.selmethod === 'get'){
+                    return true;
+                }
+                e.preventDefault();
+            }
+        }
+        });
+    </script>
+</footer>
+</div>
+</div>
+</html>
