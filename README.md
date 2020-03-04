@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<h1>Vue Rest Client Online/h1>
+	<h1>Vue Rest Client Online</h1>
 </head>
 <body>
 	<h1>Vue Rest Client Online</h1>
